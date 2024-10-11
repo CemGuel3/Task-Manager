@@ -1,47 +1,31 @@
-// import { Component, OnInit, importProvidersFrom } from '@angular/core';
-// import { HttpClientModule } from '@angular/common/http';
-// import { TaskService } from './services/task.service';
-// import { TasksComponent } from './tasks/tasks.component';
-// import { CommonModule } from '@angular/common';
-
-// @Component({
-//   selector: 'app-root',
-//   standalone: true,
-//   templateUrl: './app.component.html',
-//   styleUrls: ['./app.component.scss'],
-//   imports: [TasksComponent, HttpClientModule, CommonModule], // TasksComponent und HttpClientModule importieren
-//   providers: [TaskService], // TaskService als Provider hinzufügen
-// })
-// export class AppComponent implements OnInit {
-//   tasks: any[] = [];
-
-//   constructor(private taskService: TaskService) {}
-
-//   ngOnInit(): void {
-//     this.taskService.getTasks().subscribe((data) => {
-//       this.tasks = data;
-//     });
-//   }
-// }
-
 import { Component, OnInit } from '@angular/core';
 import { TaskService } from './services/task.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TasksComponent } from './tasks/tasks.component';
+//import { TasksComponent } from './tasks/tasks.component';
+
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  imports: [TasksComponent, CommonModule, FormsModule], // CommonModule und FormsModule hinzufügen
+  imports: [CommonModule, FormsModule],
   providers: [TaskService],
 })
 export class AppComponent implements OnInit {
-  tasks: any[] = [];
+  title(title: any) {
+    throw new Error('Method not implemented.');
+  }
+  tasks: Task[] = [];
   newTaskTitle: string = '';
   newTaskDescription: string = '';
+  taskToEdit: Task | null = null;
 
   constructor(private taskService: TaskService) {}
 
@@ -51,7 +35,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // Methode zum Hinzufügen einer neuen Aufgabe
+  // Aufgabe hinzufügen
   addTask(): void {
     if (this.newTaskTitle && this.newTaskDescription) {
       const newTask = {
@@ -59,16 +43,47 @@ export class AppComponent implements OnInit {
         description: this.newTaskDescription,
       };
 
-      // Aufgabe zum Backend hinzufügen
       this.taskService.createTask(newTask).subscribe((task) => {
-        this.tasks.push(task); // Die neue Aufgabe zur Liste hinzufügen
-        this.newTaskTitle = ''; // Eingabefelder leeren
+        this.tasks.push(task);
+        this.newTaskTitle = '';
         this.newTaskDescription = '';
       });
     }
   }
 
-  // Tracking-Funktion für die Aufgabenliste
+  // Aufgabe als erledigt markieren (löschen)
+  completeTask(taskId: number): void {
+    this.taskService.deleteTask(taskId).subscribe(() => {
+      this.tasks = this.tasks.filter((task) => task.id !== taskId);
+    });
+  }
+
+  // Aufgabe bearbeiten
+  editTask(task: Task): void {
+    this.taskToEdit = { ...task }; // Kopie des zu bearbeitenden Tasks erstellen
+  }
+
+  // Bearbeitung speichern
+  saveTask(): void {
+    if (this.taskToEdit) {
+      this.taskService.updateTask(this.taskToEdit).subscribe((updatedTask) => {
+        const index = this.tasks.findIndex(
+          (task) => task.id === updatedTask.id
+        );
+        if (index !== -1) {
+          this.tasks[index] = updatedTask;
+        }
+        this.taskToEdit = null; // Bearbeitungsmodus beenden
+      });
+    }
+  }
+
+  // Bearbeitung abbrechen
+  cancelEdit(): void {
+    this.taskToEdit = null; // Bearbeitungsmodus beenden
+  }
+
+  // Tracking-Funktion für ngFor
   trackByTaskId(index: number, task: any): number {
     return task.id;
   }

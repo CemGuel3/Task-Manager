@@ -1,15 +1,47 @@
-<h1>Aufgabenliste</h1>
-<ul>
-  <li *ngFor="let task of tasks">{{ task.title }} - {{ task.description }}</li>
-</ul>
-<!-- Formular zum Hinzufügen neuer Aufgaben -->
-<div>
-  <h3>Neue Aufgabe hinzufügen</h3>
-  <input type="text" [(ngModel)]="newTaskTitle" placeholder="Titel" />
-  <input
-    type="text"
-    [(ngModel)]="newTaskDescription"
-    placeholder="Beschreibung"
-  />
-  <button (click)="addTask()">Hinzufügen</button>
+<div class="app-container">
+  <h1>Aufgabenliste</h1>
+  <ul>
+    <li *ngFor="let task of tasks; trackBy: trackByTaskId">
+      <span>{{ task.title }} - {{ task.description }}</span>
+      <button (click)="completeTask(task.id)">Erledigt</button>
+      <button (click)="editTask(task)">Bearbeiten</button>
+    </li>
+  </ul>
+
+  <!-- Formular zum Hinzufügen neuer Aufgaben -->
+  <form>
+    <h3>Neue Aufgabe hinzufügen</h3>
+    <input
+      type="text"
+      [(ngModel)]="newTaskTitle"
+      name="taskTitle"
+      placeholder="Titel"
+    />
+    <input
+      type="text"
+      [(ngModel)]="newTaskDescription"
+      name="taskDescription"
+      placeholder="Beschreibung"
+    />
+    <button (click)="addTask()">Hinzufügen</button>
+  </form>
+
+  <!-- Formular zum Bearbeiten einer Aufgabe -->
+  <div class="edit-form" *ngIf="taskToEdit">
+    <h3>Aufgabe bearbeiten</h3>
+    <input
+      type="text"
+      [(ngModel)]="taskToEdit.title"
+      name="editTaskTitle"
+      placeholder="Titel"
+    />
+    <input
+      type="text"
+      [(ngModel)]="taskToEdit.description"
+      name="editTaskDescription"
+      placeholder="Beschreibung"
+    />
+    <button (click)="saveTask()">Speichern</button>
+    <button (click)="cancelEdit()">Abbrechen</button>
+  </div>
 </div>
